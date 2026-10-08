@@ -13,4 +13,4 @@ database_name = "corkboard"
 database_id = "29f8f572-50e9-46f1-9338-1730d9b149b3"
 
 [vars]
-GOOGLE_CLIENT_ID = "REPLACE.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "693665921127-m6oi9denb7avdoti1387ruh44be6u8pd.apps.googleusercontent.com"
