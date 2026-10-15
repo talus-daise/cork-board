@@ -2,6 +2,17 @@
 <html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>コルクボード タスク</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#fbf6ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#2a2119" media="(prefers-color-scheme: dark)">
+<meta name="description" content="付箋を貼ってタスクを整理できるコルクボードアプリ。ボードはチームで共有できます。">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="コルクボード">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--ui:#fbf6ec;--ink:#2b2118;--line:#dccdb2;--red:#c8342b}
@@ -444,5 +455,6 @@ addEventListener('keydown',e=>{const tag=e.target.tagName;
   const el=wd.querySelector(`[data-id="${t.id}"]`);if(el)el.style.transform=`translate(${t.x}px,${t.y}px) rotate(${t.r}deg)`;clearTimeout(wt);wt=setTimeout(save,400)}});
 addEventListener('resize',view);
 loadC();load();fixIds();seedSig();if(!saved){S.v.z=Math.min(1,vp.clientWidth/430);S.v.x=S.v.y=0}paintStamp();render();{let seen=false;try{seen=!!localStorage.getItem('cork.tut')}catch(e){}if(!seen)setTimeout(tutStart,400)}cloudInit();
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 })();
 </script></body></html>
