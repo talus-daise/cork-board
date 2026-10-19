@@ -33,9 +33,10 @@ header button{border:1px solid var(--line);background:none;border-radius:8px;min
 #wd{position:absolute;left:0;top:0;width:2400px;height:1600px;transform-origin:0 0;box-shadow:0 0 0 8px #6a4a2c;
 background:radial-gradient(circle at 20% 30%,#a97c4a 0 1.5px,transparent 2px) 0 0/37px 41px,radial-gradient(circle at 70% 60%,#e0bd8a 0 1.5px,transparent 2px) 0 0/29px 33px,radial-gradient(circle at 40% 80%,#8f6a3d 0 1px,transparent 1.5px) 0 0/23px 19px,#c49a68}
 .frame{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 30px rgba(0,0,0,.4)}
-.card{position:absolute;left:0;top:0;width:168px;min-height:112px;padding:24px 12px 14px;background:var(--c);color:#2b2118;font-family:'Klee One',"Hiragino Maru Gothic ProN",sans-serif;box-shadow:0 1px 1px rgba(0,0,0,.25),0 6px 10px -4px rgba(0,0,0,.4);cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;transition:scale .12s,box-shadow .12s}
-.card.lift{scale:1.06;cursor:grabbing;box-shadow:0 18px 24px -8px rgba(0,0,0,.5)}
+.card{position:absolute;left:0;top:0;width:168px;min-height:112px;padding:24px 12px 14px;background:var(--c);color:#2b2118;font-family:'Klee One',"Hiragino Maru Gothic ProN",sans-serif;box-shadow:0 1px 1px rgba(0,0,0,.25),0 6px 10px -4px rgba(0,0,0,.4);cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none;transition:box-shadow .12s,transform .12s}
+.card.lift{cursor:grabbing;box-shadow:0 18px 24px -8px rgba(0,0,0,.5),0 0 12px rgba(0,0,0,.2);animation:wobble 1s ease-in-out infinite}
 .card.pop{animation:pop .25s ease-out}@keyframes pop{from{scale:1.5;opacity:0}}
+@keyframes wobble{0%,100%{transform:translate(0,0) rotate(calc(var(--r,0deg) * 1))}25%{transform:translate(-0.5px,-0.5px) rotate(calc(var(--r,0deg) * 1 + 0.5deg))}50%{transform:translate(0.5px,0.5px) rotate(calc(var(--r,0deg) * 1 - 0.5deg))}75%{transform:translate(-0.5px,0.5px) rotate(calc(var(--r,0deg) * 1 + 0.25deg))}}
 .card:focus-visible,.card.sel{outline:2px solid #2f6fb3;outline-offset:3px}
 .card h3{margin:0 0 4px;font-size:16px;line-height:1.35;font-weight:600;overflow-wrap:anywhere}
 .card p{margin:0;font-size:13px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere;max-height:5.8em;overflow:hidden}
@@ -199,7 +200,7 @@ function load(){let d=null;try{d=JSON.parse(localStorage.getItem(KEY))}catch(e){
  if(d&&Array.isArray(d.tasks)){S.tasks=d.tasks.filter(t=>!t.del||t.del>Date.now()-7*DAY);if(d.v){S.v=d.v;saved=true}if(SH.includes(d.shape))S.shape=d.shape;if(Array.isArray(d.boards)&&d.boards.length){S.boards=d.boards;S.bd=S.boards.some(b=>b.id===d.bd)?d.bd:S.boards[0].id}S.objs=d.objs||[];zTop=Math.max(1,...S.tasks.map(t=>t.z||1))}
  else S.tasks=[mk({title:'レポートを書く',note:'参考文献を3本',x:60,y:70,r:-3,due:ymd(Date.now()+2*DAY)}),mk({title:'牛乳を買う',color:'b',x:250,y:130,r:2}),mk({title:'歯医者の予約',note:'電話は平日のみ',color:'p',x:90,y:270,r:3})]}
 function card(t){const d=t.due?new Date(t.due+'T00:00'):null,now=new Date().setHours(0,0,0,0),warn=d&&!t.stamp&&d-now<=DAY;
- return `<div class="card${t.stamp?' done':''}${warn?' warn':''}${S.sel===t.id?' sel':''}${S.pop===t.id?' pop':''}" data-id="${t.id}" tabindex="0" style="--c:${COL[t.color]};transform:translate(${t.x}px,${t.y}px) rotate(${t.r}deg);z-index:${t.z}"><i class="pin"></i><h3>${esc(t.title)||'(無題)'}</h3><p>${esc(t.note)}</p>${d?`<small>${d.getMonth()+1}/${d.getDate()}まで</small>`:''}${t.stamp?`<div class="stamp s-${t.stamp}${S.just===t.id?' hit':''}" style="${t.sx!=null?`left:${t.sx}px;top:${t.sy}px;right:auto;bottom:auto;translate:-50% -50%;`:''}--a:${t.sa}deg">${LAB[t.stamp]}</div>`:''}</div>`}
+ return `<div class="card${t.stamp?' done':''}${warn?' warn':''}${S.sel===t.id?' sel':''}${S.pop===t.id?' pop':''}" data-id="${t.id}" tabindex="0" style="--c:${COL[t.color]};--r:${t.r}deg;transform:translate(${t.x}px,${t.y}px) rotate(${t.r}deg);z-index:${t.z}"><i class="pin"></i><h3>${esc(t.title)||'(無題)'}</h3><p>${esc(t.note)}</p>${d?`<small>${d.getMonth()+1}/${d.getDate()}まで</small>`:''}${t.stamp?`<div class="stamp s-${t.stamp}${S.just===t.id?' hit':''}" style="${t.sx!=null?`left:${t.sx}px;top:${t.sy}px;right:auto;bottom:auto;translate:-50% -50%;`:''}--a:${t.sa}deg">${LAB[t.stamp]}</div>`:''}</div>`}
 const doneList=()=>S.tasks.filter(t=>!t.del&&t.stamp&&!S.stay.has(t.id)).sort((a,b)=>(b.at||0)-(a.at||0));
 function objHTML(o){const t=o.k==='text',sel=S.osel===o.id&&S.edit;
  return `<div class="obj o-${o.k}${sel?' sel':''}" data-id="${o.id}" style="left:${o.x}px;top:${o.y}px;${t?'':`width:${o.w}px;height:${o.h}px;`}--oc:${o.c};--fs:${o.fs||22}px;z-index:${(o.z||0)-100000}"><span>${esc(o.t)||(t&&S.edit?'テキスト':'')}</span>${sel&&!t?'<i class="rh"></i>':''}</div>`}
@@ -362,7 +363,7 @@ vp.addEventListener('pointermove',e=>{if(!P.has(e.pointerId))return;P.set(e.poin
  const dx=e.clientX-g.sx,dy=e.clientY-g.sy,m=Math.hypot(dx,dy);
  if(g.k==='card'){
   if(!g.drag){if(!g.touch&&m>4)startDrag();else if(g.touch&&m>8){clearTimeout(g.tm);g={k:'pan',sx:g.sx,sy:g.sy,ox:S.v.x,oy:S.v.y,moved:true}}}
-  if(g.k==='card'&&g.drag){g.t.x=g.ox+dx/S.v.z;g.t.y=g.oy+dy/S.v.z;g.el.style.transform=`translate(${g.t.x}px,${g.t.y}px) rotate(${g.t.r}deg)`;hot(e.clientX,e.clientY)}}
+  if(g.k==='card'&&g.drag){g.t.x=g.ox+dx/S.v.z;g.t.y=g.oy+dy/S.v.z;g.el.style.transform=`translate(${g.t.x}px,${g.t.y}px) rotate(${g.t.r}deg)`;g.el.style.setProperty('--r', g.t.r + 'deg');hot(e.clientX,e.clientY)}}
  if(g.k==='pan'){if(m>4)g.moved=true;if(g.moved){S.v.x=g.ox+dx;S.v.y=g.oy+dy;view()}}});
 const end=e=>{if(!P.delete(e.pointerId)||!g)return;
  if(g.k==='pinch'){if(P.size<2){g=null;save()}return}
@@ -452,7 +453,7 @@ addEventListener('keydown',e=>{const tag=e.target.tagName;
  else if(k==='Enter'){S.open=true;fillEd();$('#f-t').focus()}
  else if(k.startsWith('Arrow')){e.preventDefault();if(!e.repeat)snap();const s=e.shiftKey?50:10;
   t.x=clamp(t.x+(k==='ArrowRight'?s:k==='ArrowLeft'?-s:0),0,WW-168);t.y=clamp(t.y+(k==='ArrowDown'?s:k==='ArrowUp'?-s:0),0,WH-120);
-  const el=wd.querySelector(`[data-id="${t.id}"]`);if(el)el.style.transform=`translate(${t.x}px,${t.y}px) rotate(${t.r}deg)`;clearTimeout(wt);wt=setTimeout(save,400)}});
+  const el=wd.querySelector(`[data-id="${t.id}"]`);if(el){el.style.transform=`translate(${t.x}px,${t.y}px) rotate(${t.r}deg)`;el.style.setProperty('--r', t.r + 'deg')}clearTimeout(wt);wt=setTimeout(save,400)}});
 addEventListener('resize',view);
 loadC();load();fixIds();seedSig();if(!saved){S.v.z=Math.min(1,vp.clientWidth/430);S.v.x=S.v.y=0}paintStamp();render();{let seen=false;try{seen=!!localStorage.getItem('cork.tut')}catch(e){}if(!seen)setTimeout(tutStart,400)}cloudInit();
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
