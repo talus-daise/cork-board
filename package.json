@@ -1,0 +1,12 @@
+{
+  "name": "cork-board",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo 'Build OK'"
+  },
+  "dependencies": {
+    "wrangler": "^3.100.0"
+  }
+}
