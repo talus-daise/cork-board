@@ -252,7 +252,8 @@ async function loadGCal(){
  const url=localStorage.getItem('cork.gcal');
  if(!url){gcalEvts=[];return;}
  try{
-  const r=await fetch(url);
+  const target=url.startsWith('/api/gcal')||url.startsWith('http')?'/api/gcal?url='+encodeURIComponent(url):url;
+  const r=await fetch(target);
   if(r.ok) gcalEvts=parseICS(await r.text());
  }catch(e){}
 }
@@ -497,7 +498,7 @@ addEventListener('pointermove',e=>{if(!S.mode)return;const f=$('#sf');if(e.point
 vp.addEventListener('contextmenu',e=>{if(S.mode){e.preventDefault();setMode(false)}});
 $('#stbtn').onclick=stBtn;$('#sx').onclick=()=>setMode(false);
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>page(b.dataset.p));
-$('#tlv').addEventListener('click',e=>{const c=e.target.closest('.tl-card');if(c){select(c.dataset.id,true);renderTimeline()}});
+$('#tlv').addEventListener('click',e=>{const c=e.target.closest('.tl-card');if(c){S.sel=c.dataset.id;S.open=true;fillEd();renderTimeline()}});
 $('#dv').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const L=doneList(),ids=[...S.pick];
  if(b.id==='d-all'){S.pick=ids.length===L.length?new Set():new Set(L.map(t=>t.id));renderDone()}
  else if(b.id==='d-res'&&ids.length)restore(ids);else if(b.id==='d-del'&&ids.length)trashMany(ids);

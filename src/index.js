@@ -41,6 +41,18 @@ async function route(req, env, url) {
   if (m !== 'GET' && (req.headers.get('origin') || url.origin) !== url.origin) return J({ error: 'origin' }, 403);
   const body = m === 'GET' || m === 'DELETE' ? {} : await req.json().catch(() => ({}));
   if (p[0] === 'health') return J({ ok: true, clientId: env.GOOGLE_CLIENT_ID });
+  if (p[0] === 'gcal' && m === 'GET') {
+    const urlParam = url.searchParams.get('url');
+    if (!urlParam || !/^https:\/\/calendar\.google\.com\//.test(urlParam)) return J({ error: 'invalid url' }, 400);
+    try {
+      const res = await fetch(urlParam);
+      if (!res.ok) return J({ error: 'fetch failed' }, res.status);
+      const text = await res.text();
+      return new Response(text, { status: 200, headers: { 'content-type': 'text/calendar; charset=utf-8' } });
+    } catch (e) {
+      return J({ error: 'fetch error' }, 500);
+    }
+  }
   if (p[0] === 'auth' && p[1] === 'google' && m === 'POST') {
     let g; try { g = await verifyGoogle(String(body.credential || ''), env); } catch (e) { return J({ error: 'invalid' }, 401); }
     let u = await DB.prepare('select id from users where sub=?').bind(g.sub).first();
