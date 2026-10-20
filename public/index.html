@@ -63,18 +63,23 @@ background:radial-gradient(circle at 20% 30%,#a97c4a 0 1.5px,transparent 2px) 0 
 #undo{margin-left:auto}.tip{display:none}.wide{display:none}
 @media(min-width:600px){.tip{display:block}.wide{display:inline}}
 #dv,#tv,#tlv{flex:1;min-width:0;min-height:0;overflow:auto;padding:0 14px 20px}
-#tll{display:flex;gap:16px;overflow-x:auto;padding:12px 0;align-items:flex-start;min-height:100%}
-.tl-col{flex:0 0 200px;display:flex;flex-direction:column;gap:10px;background:rgba(0,0,0,.03);border:1px solid var(--line);border-radius:12px;padding:12px 10px;min-height:300px}
-.tl-col.today{border-color:#2f6fb3;background:rgba(47,111,179,.06)}
-.tl-hdr{font-weight:600;font-size:14px;padding-bottom:6px;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center}
-.tl-col.today .tl-hdr{color:#2f6fb3}
-.tl-col.past .tl-hdr{color:var(--red)}
-.tl-cnt{font-size:12px;opacity:.7;font-weight:normal}
-.tl-cards{display:flex;flex-direction:column;gap:10px}
-.tl-card{position:relative;padding:14px 10px 10px;background:var(--c);color:#2b2118;font-family:'Klee One',sans-serif;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.2);cursor:pointer;user-select:none}
+#tll{display:flex;flex-direction:column;gap:20px;padding:12px 0;min-height:100%}
+.tl-day-row{background:rgba(0,0,0,.03);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.tl-day-row.today{border-color:#2f6fb3;background:rgba(47,111,179,.05)}
+.tl-day-hdr{font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center}
+.tl-day-row.today .tl-day-hdr{color:#2f6fb3}
+.tl-day-row.past .tl-day-hdr{color:var(--red)}
+.tl-axis-wrap{position:relative;overflow-x:auto;padding-bottom:10px}
+.tl-time-axis{position:relative;min-width:1200px;height:24px;border-bottom:2px solid var(--line);margin-bottom:80px;display:flex}
+.tl-tick{position:absolute;top:0;bottom:-6px;border-left:1px dashed var(--line);font-size:10px;opacity:.65;padding-left:2px}
+.tl-events-layer{position:absolute;top:30px;left:0;min-width:1200px;height:32px;pointer-events:none}
+.tl-gcal-evt{position:absolute;height:28px;background:#4285f4;color:#fff;border-radius:6px;padding:2px 8px;font-size:12px;line-height:24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.2);z-index:2}
+.tl-notes-layer{position:relative;min-width:1200px;min-height:120px}
+.tl-card{position:absolute;width:150px;padding:12px 10px;background:var(--c);color:#2b2118;font-family:'Klee One',sans-serif;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;user-select:none;z-index:3;transition:transform .12s}
+.tl-card:hover{transform:scale(1.03)}
 .tl-card:focus-visible,.tl-card.sel{outline:2px solid #2f6fb3;outline-offset:2px}
-.tl-card h3{margin:0 0 4px;font-size:15px;line-height:1.3;font-weight:600;overflow-wrap:anywhere}
-.tl-card p{margin:0;font-size:12px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere;max-height:4em;overflow:hidden}
+.tl-card h3{margin:0 0 2px;font-size:14px;line-height:1.2;font-weight:600;overflow-wrap:anywhere}
+.tl-card p{margin:0;font-size:11px;line-height:1.3;white-space:pre-wrap;overflow-wrap:anywhere;max-height:3em;overflow:hidden}
 .dt{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 0;background:var(--ui)}
 .dt button{min-height:40px;padding:0 12px;border:1px solid var(--line);background:none;border-radius:8px}
 .dt button:disabled{opacity:.4;cursor:default}.dt .dng{color:var(--red);border-color:var(--red)}.dt span{flex:1;min-width:110px;font-size:13px;opacity:.7}
@@ -150,7 +155,7 @@ body.em #toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 #ed,#oe{position:static;width:300px;border:0;border-left:1px solid var(--line);border-radius:0;box-shadow:none;animation:none;align-content:start;padding:14px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
-<header><b>コルクボード</b><nav class="tabs"><button data-p="board" class="on">ボード</button><button data-p="timeline">タイムライン</button><button data-p="done">完了<b id="dc"></b></button><button data-p="trash">ゴミ箱<b id="tc2"></b></button></nav><button id="undo" aria-label="元に戻す">↶<span class="wide"> 元に戻す</span></button><button id="acct" hidden aria-label="アカウント">👤</button><button id="help" aria-label="使い方">?</button></header>
+<header><b>コルクボード</b><nav class="tabs"><button data-p="board" class="on">ボード</button><button data-p="timeline">タイムライン</button><button data-p="done">完了<b id="dc"></b></button><button data-p="trash">ゴミ箱<b id="tc2"></b></button></nav><button id="cal-cfg" aria-label="カレンダー連携">📅 カレンダー</button><button id="undo" aria-label="元に戻す">↶<span class="wide"> 元に戻す</span></button><button id="acct" hidden aria-label="アカウント">👤</button><button id="help" aria-label="使い方">?</button></header>
 <div id="bb"></div>
 <div id="app">
 <nav id="dock" aria-label="ツール">
@@ -182,6 +187,10 @@ body.em #toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 <div class="row"><button class="t" id="o-up">前面へ</button><button class="t" id="o-dn">背面へ</button><button class="t dng" id="o-del">削除</button></div></aside></div>
 <div id="toast" hidden></div><div class="stamp s-done" id="sf" hidden></div>
 <div id="am" hidden><div class="amc"><div class="eh"><b>アカウント</b><button id="am-x" aria-label="閉じる">✕</button></div><div id="am-b"></div></div></div>
+<div id="cm" hidden><div class="amc"><div class="eh"><b>Googleカレンダー連携</b><button id="cm-x" aria-label="閉じる">✕</button></div>
+<p style="font-size:13px;opacity:.8;margin:8px 0">Googleカレンダーの「公開iCal形式のURL」を入力すると、タイムラインに予定を表示します。</p>
+<input id="cm-url" placeholder="https://calendar.google.com/.../basic.ics" style="width:100%;min-height:40px;padding:0 10px;font:14px system-ui;color:inherit;background:transparent;border:1px solid var(--line);border-radius:8px">
+<div class="row" style="margin-top:12px"><button class="t" id="cm-save">保存・読み込み</button><button class="t dng" id="cm-clr">解除</button></div></div></div>
 <div id="tut" hidden><div id="ring"></div><div id="tp"><div id="tt"></div><div class="tb"><span id="td"></span><button id="t-skip">スキップ</button><button id="t-prev">戻る</button><button id="t-next">次へ</button></div></div></div><script>
 (()=>{
 const $=s=>document.querySelector(s),vp=$('#vp'),wd=$('#wd'),ed=$('#ed');
@@ -224,7 +233,31 @@ function view(){const W=vp.clientWidth,H=vp.clientHeight,v=S.v;if(!W)return;v.z=
  wd.style.transform=`translate(${v.x}px,${v.y}px) scale(${v.z})`;$('#zl').textContent=Math.round(v.z*100)+'%'}
 function zoomAt(cx,cy,nz){const v=S.v,wx=(cx-v.x)/v.z,wy=(cy-v.y)/v.z;v.z=clamp(nz,.4,2);v.x=cx-wx*v.z;v.y=cy-wy*v.z;view()}
 const mark=()=>wd.querySelectorAll('.card').forEach(c=>c.classList.toggle('sel',c.dataset.id===S.sel));
-function renderTimeline(){const active=S.tasks.filter(t=>!t.del&&bof(t)===S.bd);
+let gcalEvts=[];
+function parseICS(txt){
+ const evs=[], lines=txt.split(/\r?\n/);
+ let cur=null;
+ for(let l of lines){
+  if(l.startsWith('BEGIN:VEVENT')) cur={};
+  else if(l.startsWith('END:VEVENT')){if(cur&&cur.title) evs.push(cur); cur=null;}
+  else if(cur){
+   if(l.startsWith('SUMMARY:')) cur.title=l.slice(8);
+   else if(l.startsWith('DTSTART')) cur.start=l.split(':')[1];
+   else if(l.startsWith('DTEND')) cur.end=l.split(':')[1];
+  }
+ }
+ return evs;
+}
+async function loadGCal(){
+ const url=localStorage.getItem('cork.gcal');
+ if(!url){gcalEvts=[];return;}
+ try{
+  const r=await fetch(url);
+  if(r.ok) gcalEvts=parseICS(await r.text());
+ }catch(e){}
+}
+function renderTimeline(){
+ const active=S.tasks.filter(t=>!t.del&&bof(t)===S.bd);
  const today=ymd(Date.now());
  const map=new Map();
  const dates=new Set();
@@ -245,18 +278,45 @@ function renderTimeline(){const active=S.tasks.filter(t=>!t.del&&bof(t)===S.bd);
   const dObj=new Date(d+'T00:00');
   const dayName=['日','月','火','水','木','金','土'][dObj.getDay()];
   const label=isToday?`今日 (${dObj.getMonth()+1}/${dObj.getDate()})`:`${dObj.getMonth()+1}/${dObj.getDate()} (${dayName})`;
-  h+=`<div class="tl-col${isToday?' today':''}${isPast?' past':''}"><div class="tl-hdr"><span>${label}</span><span class="tl-cnt">${items.length}件</span></div><div class="tl-cards">`;
-  for(const t of items){
-   h+=`<div class="tl-card${t.stamp?' done':''}${S.sel===t.id?' sel':''}" data-id="${t.id}" style="--c:${COL[t.color]}"><h3>${esc(t.title)||'(無題)'}</h3><p>${esc(t.note)}</p>${t.stamp?`<div class="stamp s-${t.stamp}" style="--a:${t.sa}deg;width:40px;height:40px;font-size:16px;right:4px;bottom:4px;border-width:2px">${LAB[t.stamp]}</div>`:''}</div>`;
+
+  let ticks='', evsHTML='', notesHTML='';
+  for(let hr=0; hr<=24; hr+=2){
+   const left=(hr/24)*100;
+   ticks+=`<div class="tl-tick" style="left:${left}%">${hr}:00</div>`;
   }
-  h+='</div></div>';
+
+  const dayEvts=gcalEvts.filter(e=>e.start&&e.start.startsWith(d.replace(/-/g,'')));
+  for(const e of dayEvts){
+   let sh=9, eh=10;
+   if(e.start.includes('T')){
+    sh=parseInt(e.start.slice(9,11),10)+parseInt(e.start.slice(11,13),10)/60;
+    if(e.end&&e.end.includes('T')) eh=parseInt(e.end.slice(9,11),10)+parseInt(e.end.slice(11,13),10)/60;
+    else eh=sh+1;
+   }
+   const left=(sh/24)*100, width=Math.max(4, ((eh-sh)/24)*100);
+   evsHTML+=`<div class="tl-gcal-evt" style="left:${left}%;width:${width}%" title="${esc(e.title)}">📅 ${esc(e.title)}</div>`;
+  }
+
+  items.forEach((t, i)=>{
+   const left=Math.min(85, (i*16)%85);
+   const top=(i%3)*40;
+   notesHTML+=`<div class="tl-card${t.stamp?' done':''}${S.sel===t.id?' sel':''}" data-id="${t.id}" style="left:${left}%;top:${top}px;--c:${COL[t.color]}"><h3>${esc(t.title)||'(無題)'}</h3><p>${esc(t.note)}</p>${t.stamp?`<div class="stamp s-${t.stamp}" style="--a:${t.sa}deg;width:32px;height:32px;font-size:14px;right:4px;bottom:4px;border-width:2px">${LAB[t.stamp]}</div>`:''}</div>`;
+  });
+
+  h+=`<div class="tl-day-row${isToday?' today':''}${isPast?' past':''}"><div class="tl-day-hdr"><span>${label}</span><span>${items.length}件の付箋</span></div><div class="tl-axis-wrap"><div class="tl-time-axis">${ticks}</div><div class="tl-events-layer">${evsHTML}</div><div class="tl-notes-layer" style="min-height:${Math.max(120, Math.ceil(items.length/3)*50)}px">${notesHTML}</div></div></div>`;
  }
+
  const noDueItems=map.get('nodue')||[];
- h+=`<div class="tl-col"><div class="tl-hdr"><span>日付なし</span><span class="tl-cnt">${noDueItems.length}件</span></div><div class="tl-cards">`;
- for(const t of noDueItems){
-  h+=`<div class="tl-card${t.stamp?' done':''}${S.sel===t.id?' sel':''}" data-id="${t.id}" style="--c:${COL[t.color]}"><h3>${esc(t.title)||'(無題)'}</h3><p>${esc(t.note)}</p>${t.stamp?`<div class="stamp s-${t.stamp}" style="--a:${t.sa}deg;width:40px;height:40px;font-size:16px;right:4px;bottom:4px;border-width:2px">${LAB[t.stamp]}</div>`:''}</div>`;
+ if(noDueItems.length){
+  let noDueNotes='';
+  noDueItems.forEach((t, i)=>{
+   const left=Math.min(85, (i*16)%85);
+   const top=(i%3)*40;
+   noDueNotes+=`<div class="tl-card${t.stamp?' done':''}${S.sel===t.id?' sel':''}" data-id="${t.id}" style="left:${left}%;top:${top}px;--c:${COL[t.color]}"><h3>${esc(t.title)||'(無題)'}</h3><p>${esc(t.note)}</p>${t.stamp?`<div class="stamp s-${t.stamp}" style="--a:${t.sa}deg;width:32px;height:32px;font-size:14px;right:4px;bottom:4px;border-width:2px">${LAB[t.stamp]}</div>`:''}</div>`;
+  });
+  h+=`<div class="tl-day-row"><div class="tl-day-hdr"><span>日付なし</span><span>${noDueItems.length}件の付箋</span></div><div class="tl-axis-wrap"><div class="tl-notes-layer" style="min-height:${Math.max(120, Math.ceil(noDueItems.length/3)*50)}px">${noDueNotes}</div></div></div>`;
  }
- h+='</div></div>';
+
  $('#tll').innerHTML=h;
 }
 function fillEd(){const t=get(S.sel),show=t&&!t.del&&!t.stamp&&S.open&&(S.page==='board'||S.page==='timeline')&&!S.edit;ed.hidden=!show;if(!show)return;
@@ -449,6 +509,10 @@ $('#tv').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  else if(b.id==='t-clr'&&L.length)purge(L.map(t=>t.id))});
 $('#tv').addEventListener('change',e=>{const i=e.target.dataset&&e.target.dataset.id;if(!i)return;e.target.checked?tpick.add(i):tpick.delete(i);updTbT()});
 $('#edbtn').onclick=()=>setEdit(!S.edit);$('#help').onclick=tutStart;
+$('#cal-cfg').onclick=()=>{const u=localStorage.getItem('cork.gcal')||'';$('#cm-url').value=u;$('#cm').hidden=false;$('#cm-url').focus()};
+$('#cm-x').onclick=()=>{$('#cm').hidden=true};
+$('#cm-save').onclick=async ()=>{const u=$('#cm-url').value.trim();if(u)localStorage.setItem('cork.gcal',u);else localStorage.removeItem('cork.gcal');$('#cm').hidden=true;await loadGCal();renderTimeline()};
+$('#cm-clr').onclick=async ()=>{localStorage.removeItem('cork.gcal');$('#cm-url').value='';$('#cm').hidden=true;await loadGCal();renderTimeline()};
 $('#et').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='e-x')setEdit(false);else{S.tool=b.dataset.tool;if(S.tool!=='sel'){S.osel=null;markO()}paintTool()}});
 $('#bb').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
  if(b.id==='b-add'){snap();const id=uid();S.boards.push({id,name:'ボード'+(S.boards.length+1)});S.bd=id;S.osel=S.sel=null;S.open=false;render();save()}
@@ -504,7 +568,7 @@ addEventListener('keydown',e=>{const tag=e.target.tagName;
   t.x=clamp(t.x+(k==='ArrowRight'?s:k==='ArrowLeft'?-s:0),0,WW-168);t.y=clamp(t.y+(k==='ArrowDown'?s:k==='ArrowUp'?-s:0),0,WH-120);
   const el=wd.querySelector(`[data-id="${t.id}"]`);if(el){el.style.transform=`translate(${t.x}px,${t.y}px) rotate(${t.r}deg)`;el.style.setProperty('--r', t.r + 'deg');el.style.setProperty('--x', t.x + 'px');el.style.setProperty('--y', t.y + 'px')}clearTimeout(wt);wt=setTimeout(save,400)}});
 addEventListener('resize',view);
-loadC();load();fixIds();seedSig();if(!saved){S.v.z=Math.min(1,vp.clientWidth/430);S.v.x=S.v.y=0}paintStamp();render();{let seen=false;try{seen=!!localStorage.getItem('cork.tut')}catch(e){}if(!seen)setTimeout(tutStart,400)}cloudInit();
+loadC();load();fixIds();seedSig();if(!saved){S.v.z=Math.min(1,vp.clientWidth/430);S.v.x=S.v.y=0}paintStamp();loadGCal().then(()=>render());{let seen=false;try{seen=!!localStorage.getItem('cork.tut')}catch(e){}if(!seen)setTimeout(tutStart,400)}cloudInit();
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 })();
 </script></body></html>
