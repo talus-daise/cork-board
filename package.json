@@ -2,10 +2,11 @@
   "name": "cork-board",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "echo 'No build step required'"
+    "build": "echo 'Build OK'"
   },
-  "devDependencies": {
+  "dependencies": {
     "wrangler": "^3.100.0"
   }
 }
