@@ -97,6 +97,7 @@ header{gap:6px}.tabs button{padding:0 8px}#help{min-width:36px;padding:0}
 #bb{display:flex;gap:6px;align-items:center;padding:6px 12px;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
 #bb button{flex:none;min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:18px;background:none;white-space:nowrap}
 #bb button:disabled{opacity:.4}#bb .on{background:var(--ink);color:var(--ui)}
+#bb button.bdel{border-color:var(--red);color:var(--red)}
 #bb input{flex:none;width:9em;min-height:36px;padding:0 12px;border:2px solid #2f6fb3;border-radius:18px;background:transparent;color:inherit;font:16px system-ui}
 .obj{position:absolute;pointer-events:none;touch-action:none;user-select:none;-webkit-user-select:none;font:600 var(--fs)/1.3 'Klee One',sans-serif;color:var(--oc);white-space:pre-wrap;overflow-wrap:anywhere;text-shadow:0 1px 3px rgba(0,0,0,.35)}
 .o-text{max-width:720px}
@@ -327,10 +328,11 @@ function updTb(n){if(n==null)n=doneList().length;const k=S.pick.size;$('#dsel').
 function restore(ids){snap();ids.forEach(i=>{const t=get(i);t.stamp='';t.sx=t.sy=null;t.z=++zTop});S.pick.clear();render();save();toast(`${ids.length}件をボードに戻しました`,'元に戻す',undo)}
 function trashMany(ids){snap();ids.forEach(i=>{get(i).del=Date.now()});S.pick.clear();render();save();toast(`${ids.length}件をゴミ箱に入れました`,'元に戻す',undo)}
 let tpick=new Set();
-function renderBar(){const bb=$('#bb');bb.innerHTML=S.boards.map(b=>b.id===S.bd&&S.edit?`<input data-rn value="${esc(b.name)}" maxlength="20" aria-label="ボード名"><button data-bdel aria-label="ボードを削除"${S.boards.length<2?' disabled':''}>🗑</button>${C.user?`<select data-bteam aria-label="共有先"><option value="">自分だけ</option>${C.teams.map(t=>`<option value="${t.id}"${t.id===b.team?' selected':''}>${esc(t.name)}</option>`).join('')}</select>`:''}`:`<button data-b="${b.id}"${b.id===S.bd?' class="on"':''}>${esc(b.name)}</button>`).join('')+'<button id="b-add">＋ ボード</button>';
+function renderBar(){const bb=$('#bb');bb.innerHTML=S.boards.map((b,i)=>b.id===S.bd&&S.edit?`<input data-rn value="${esc(b.name)}" maxlength="20" aria-label="ボード名"><button data-bmv="-1" aria-label="ボードを前に移動"${i===0?' disabled':''}>←</button><button data-bmv="1" aria-label="ボードを後ろに移動"${i===S.boards.length-1?' disabled':''}>→</button><button class="bdel" data-bdel aria-label="ボードを削除"${S.boards.length<2?' disabled':''}>🗑 削除</button>${C.user?`<select data-bteam aria-label="共有先"><option value="">自分だけ</option>${C.teams.map(t=>`<option value="${t.id}"${t.id===b.team?' selected':''}>${esc(t.name)}</option>`).join('')}</select>`:''}`:`<button data-b="${b.id}"${b.id===S.bd?' class="on"':''}>${esc(b.name)}</button>`).join('')+'<button id="b-add">＋ ボード</button>';
  const on=bb.querySelector('.on,[data-rn]');if(on&&on.scrollIntoView)on.scrollIntoView({inline:'nearest',block:'nearest'})}
-function delBoard(){const id=S.bd;snap();const now=Date.now();{const bb=S.boards.find(b=>b.id===id);if(bb&&bb.cloud)C.delb.push(id)}S.tasks.forEach(t=>{if(bof(t)===id&&!t.stamp&&!t.del)t.del=now});
+function delBoard(){const id=S.bd;const bd=S.boards.find(b=>b.id===id);if(!confirm(`「${bd?bd.name:'ボード'}」を削除しますか？\nこのボードの付箋はゴミ箱に移動します。`))return;snap();const now=Date.now();{const bb=S.boards.find(b=>b.id===id);if(bb&&bb.cloud)C.delb.push(id)}S.tasks.forEach(t=>{if(bof(t)===id&&!t.stamp&&!t.del)t.del=now});
  S.objs=S.objs.filter(o=>o.b!==id);S.boards=S.boards.filter(b=>b.id!==id);S.bd=S.boards[0].id;S.osel=S.sel=null;S.open=false;render();save();toast('ボードを削除しました','元に戻す',undo)}
+function moveBoard(d){const i=S.boards.findIndex(b=>b.id===S.bd),j=i+d;if(i<0||j<0||j>=S.boards.length)return;snap();const t=S.boards[i];S.boards[i]=S.boards[j];S.boards[j]=t;render();save()}
 function paintTool(){document.querySelectorAll('#et [data-tool]').forEach(b=>b.classList.toggle('on',b.dataset.tool===S.tool))}
 function setEdit(on){S.edit=on;if(on)setMode(false);S.tool='sel';S.osel=null;S.sel=null;S.open=false;document.body.classList.toggle('em',on);$('#et').hidden=!on;$('#edbtn').classList.toggle('on',on);paintTool();render()}
 function markO(){wd.querySelectorAll('.obj').forEach(el=>{const on=el.dataset.id===S.osel,o=getO(el.dataset.id),h=el.querySelector('.rh');el.classList.toggle('sel',on);
@@ -494,6 +496,7 @@ $('#et').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 $('#bb').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
  if(b.id==='b-add'){snap();const id=uid();S.boards.push({id,name:'ボード'+(S.boards.length+1)});S.bd=id;S.osel=S.sel=null;S.open=false;render();save()}
  else if(b.dataset.b){S.bd=b.dataset.b;S.osel=S.sel=null;S.open=false;render();save()}
+ else if(b.dataset.bmv!==undefined)moveBoard(+b.dataset.bmv)
  else if(b.dataset.bdel!==undefined&&S.boards.length>1)delBoard()});
 $('#bb').addEventListener('input',e=>{if(e.target.dataset.rn===undefined)return;const b=S.boards.find(x=>x.id===S.bd);if(b){b.name=e.target.value;save()}});
 $('#bb').addEventListener('change',e=>{if(e.target.dataset.rn===undefined)return;const b=S.boards.find(x=>x.id===S.bd);if(b&&!b.name.trim()){b.name='ボード';renderBar();save()}});
