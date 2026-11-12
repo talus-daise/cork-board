@@ -69,13 +69,12 @@ background:radial-gradient(circle at 20% 30%,#a97c4a 0 1.5px,transparent 2px) 0 
 .tl-day-hdr{font-weight:600;font-size:15px;display:flex;justify-content:space-between;align-items:center}
 .tl-day-row.today .tl-day-hdr{color:#2f6fb3}
 .tl-day-row.past .tl-day-hdr{color:var(--red)}
-.tl-axis-wrap{position:relative;overflow-x:auto;padding-bottom:10px}
-.tl-time-axis{position:relative;min-width:1200px;height:24px;border-bottom:2px solid var(--line);margin-bottom:80px;display:flex}
-.tl-tick{position:absolute;top:0;bottom:-6px;border-left:1px dashed var(--line);font-size:10px;opacity:.65;padding-left:2px}
-.tl-events-layer{position:absolute;top:30px;left:0;min-width:1200px;height:32px;pointer-events:none}
-.tl-gcal-evt{position:absolute;height:28px;background:#4285f4;color:#fff;border-radius:6px;padding:2px 8px;font-size:12px;line-height:24px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.2);z-index:2}
-.tl-notes-layer{position:relative;min-width:1200px;min-height:120px}
-.tl-card{position:absolute;width:150px;padding:12px 10px;background:var(--c);color:#2b2118;font-family:'Klee One',sans-serif;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;user-select:none;z-index:3;transition:transform .12s}
+.tl-gcal-list{display:flex;flex-wrap:wrap;gap:6px}
+.tl-gcal-evt{display:inline-flex;align-items:center;gap:4px;max-width:100%;background:#4285f4;color:#fff;border-radius:999px;padding:3px 10px;font-size:12px;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tl-gcal-evt .tm{opacity:.85;font-variant-numeric:tabular-nums}
+.tl-notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tl-empty{margin:0;font-size:13px;opacity:.6}
+.tl-card{position:relative;padding:12px 10px;background:var(--c);color:#2b2118;font-family:'Klee One',sans-serif;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,.2);cursor:pointer;user-select:none;transition:transform .12s}
 .tl-card:hover{transform:scale(1.03)}
 .tl-card:focus-visible,.tl-card.sel{outline:2px solid #2f6fb3;outline-offset:2px}
 .tl-card h3{margin:0 0 2px;font-size:14px;line-height:1.2;font-weight:600;overflow-wrap:anywhere}
@@ -256,6 +255,14 @@ async function loadGCal(){
   if(r.ok) gcalEvts=parseICS(await r.text());
  }catch(e){}
 }
+function tlCard(t){
+ return `<div class="tl-card${t.stamp?' done':''}${S.sel===t.id?' sel':''}" data-id="${t.id}" style="--c:${COL[t.color]}"><h3>${esc(t.title)||'(無題)'}</h3><p>${esc(t.note)}</p>${t.stamp?`<div class="stamp s-${t.stamp}" style="--a:${t.sa}deg;width:32px;height:32px;font-size:14px;right:4px;bottom:4px;border-width:2px">${LAB[t.stamp]}</div>`:''}</div>`;
+}
+function gcalTime(e){
+ if(!e.start||!e.start.includes('T')) return '';
+ const hm=s=>s.slice(9,11)+':'+s.slice(11,13);
+ return e.end&&e.end.includes('T')?`${hm(e.start)}〜${hm(e.end)}`:hm(e.start);
+}
 function renderTimeline(){
  const active=S.tasks.filter(t=>!t.del&&bof(t)===S.bd);
  const today=ymd(Date.now());
@@ -278,45 +285,15 @@ function renderTimeline(){
   const dObj=new Date(d+'T00:00');
   const dayName=['日','月','火','水','木','金','土'][dObj.getDay()];
   const label=isToday?`今日 (${dObj.getMonth()+1}/${dObj.getDate()})`:`${dObj.getMonth()+1}/${dObj.getDate()} (${dayName})`;
-
-  let ticks='', evsHTML='', notesHTML='';
-  for(let hr=0; hr<=24; hr+=2){
-   const left=(hr/24)*100;
-   ticks+=`<div class="tl-tick" style="left:${left}%">${hr}:00</div>`;
-  }
-
-  const dayEvts=gcalEvts.filter(e=>e.start&&e.start.startsWith(d.replace(/-/g,'')));
-  for(const e of dayEvts){
-   let sh=9, eh=10;
-   if(e.start.includes('T')){
-    sh=parseInt(e.start.slice(9,11),10)+parseInt(e.start.slice(11,13),10)/60;
-    if(e.end&&e.end.includes('T')) eh=parseInt(e.end.slice(9,11),10)+parseInt(e.end.slice(11,13),10)/60;
-    else eh=sh+1;
-   }
-   const left=(sh/24)*100, width=Math.max(4, ((eh-sh)/24)*100);
-   evsHTML+=`<div class="tl-gcal-evt" style="left:${left}%;width:${width}%" title="${esc(e.title)}">📅 ${esc(e.title)}</div>`;
-  }
-
-  items.forEach((t, i)=>{
-   const left=Math.min(85, (i*16)%85);
-   const top=(i%3)*40;
-   notesHTML+=`<div class="tl-card${t.stamp?' done':''}${S.sel===t.id?' sel':''}" data-id="${t.id}" style="left:${left}%;top:${top}px;--c:${COL[t.color]}"><h3>${esc(t.title)||'(無題)'}</h3><p>${esc(t.note)}</p>${t.stamp?`<div class="stamp s-${t.stamp}" style="--a:${t.sa}deg;width:32px;height:32px;font-size:14px;right:4px;bottom:4px;border-width:2px">${LAB[t.stamp]}</div>`:''}</div>`;
-  });
-
-  h+=`<div class="tl-day-row${isToday?' today':''}${isPast?' past':''}"><div class="tl-day-hdr"><span>${label}</span><span>${items.length}件の付箋</span></div><div class="tl-axis-wrap"><div class="tl-time-axis">${ticks}</div><div class="tl-events-layer">${evsHTML}</div><div class="tl-notes-layer" style="min-height:${Math.max(120, Math.ceil(items.length/3)*50)}px">${notesHTML}</div></div></div>`;
+  const dayEvts=gcalEvts.filter(e=>e.start&&e.start.startsWith(d.replace(/-/g,''))).sort((a,b)=>String(a.start).localeCompare(String(b.start)));
+  const evsHTML=dayEvts.length?`<div class="tl-gcal-list">${dayEvts.map(e=>{const tm=gcalTime(e);return `<span class="tl-gcal-evt" title="${esc(e.title)}">📅 ${tm?`<span class="tm">${tm}</span> `:''}${esc(e.title)}</span>`}).join('')}</div>`:'';
+  const notesHTML=items.length?items.map(tlCard).join(''):'<p class="tl-empty">この日の付箋はありません</p>';
+  h+=`<div class="tl-day-row${isToday?' today':''}${isPast?' past':''}"><div class="tl-day-hdr"><span>${label}</span><span>${items.length}件の付箋</span></div>${evsHTML}<div class="tl-notes-grid">${notesHTML}</div></div>`;
  }
-
  const noDueItems=map.get('nodue')||[];
  if(noDueItems.length){
-  let noDueNotes='';
-  noDueItems.forEach((t, i)=>{
-   const left=Math.min(85, (i*16)%85);
-   const top=(i%3)*40;
-   noDueNotes+=`<div class="tl-card${t.stamp?' done':''}${S.sel===t.id?' sel':''}" data-id="${t.id}" style="left:${left}%;top:${top}px;--c:${COL[t.color]}"><h3>${esc(t.title)||'(無題)'}</h3><p>${esc(t.note)}</p>${t.stamp?`<div class="stamp s-${t.stamp}" style="--a:${t.sa}deg;width:32px;height:32px;font-size:14px;right:4px;bottom:4px;border-width:2px">${LAB[t.stamp]}</div>`:''}</div>`;
-  });
-  h+=`<div class="tl-day-row"><div class="tl-day-hdr"><span>日付なし</span><span>${noDueItems.length}件の付箋</span></div><div class="tl-axis-wrap"><div class="tl-notes-layer" style="min-height:${Math.max(120, Math.ceil(noDueItems.length/3)*50)}px">${noDueNotes}</div></div></div>`;
+  h+=`<div class="tl-day-row"><div class="tl-day-hdr"><span>日付なし</span><span>${noDueItems.length}件の付箋</span></div><div class="tl-notes-grid">${noDueItems.map(tlCard).join('')}</div></div>`;
  }
-
  $('#tll').innerHTML=h;
 }
 function fillEd(){const t=get(S.sel),show=t&&!t.del&&!t.stamp&&S.open&&(S.page==='board'||S.page==='timeline')&&!S.edit;ed.hidden=!show;if(!show)return;
