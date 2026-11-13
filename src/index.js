@@ -55,6 +55,27 @@ async function route(req, env, url) {
     if (c) await DB.prepare('delete from sessions where h=?').bind(await sha(c[1])).run();
     return J({ ok: true }, 200, { 'set-cookie': 'sid=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0' });
   }
+  if (p[0] === 'ro' && p[1] === 'items' && m === 'GET') {
+    // Read-only export of the owner's notes (for the morning summary). Token-gated, GET only.
+    const tok = env.READONLY_TOKEN || '', mail = env.READONLY_EMAIL || '';
+    if (!tok || !mail) return J({ error: 'not configured' }, 503);
+    const given = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '') || url.searchParams.get('token') || '';
+    if (!given || given !== tok) return J({ error: 'auth' }, 401);
+    const owner = await DB.prepare('select id from users where email=?').bind(mail).first();
+    if (!owner) return J({ error: 'owner not found' }, 404);
+    const boards = (await DB.prepare('select id,name from boards where (team_id is null and owner=?1) or team_id in (select team_id from members where uid=?1)').bind(owner.id).all()).results;
+    const items = [];
+    for (const b of boards) {
+      const rows = (await DB.prepare("select id,d from items where board_id=? and k='t' and gone=0").bind(b.id).all()).results;
+      for (const r of rows) {
+        let t; try { t = JSON.parse(r.d); } catch (e) { continue; }
+        if (!t || t.del) continue;
+        items.push({ board: b.name, board_id: b.id, id: r.id, title: t.title || '', note: t.note || '', due: t.due || '', done: !!t.stamp });
+      }
+    }
+    items.sort((a, b) => (a.due || '9999-99-99').localeCompare(b.due || '9999-99-99'));
+    return J({ items });
+  }
   const user = await me(req, env); if (!user) return J({ error: 'auth' }, 401);
   const uid = user.id, all = (sql, ...a) => DB.prepare(sql).bind(...a).all().then(r => r.results), one = (sql, ...a) => DB.prepare(sql).bind(...a).first();
   if (p[0] === 'me') return J({ user, teams: await all('select t.id,t.name,m.role from members m join teams t on t.id=m.team_id where m.uid=?', uid) });
