@@ -7,6 +7,6 @@
     "build": "echo 'Build OK'"
   },
   "dependencies": {
-    "wrangler": "^3.100.0"
+    "wrangler": "^4.161.0"
   }
 }
