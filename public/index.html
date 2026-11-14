@@ -298,8 +298,11 @@ async function loadGCal(){
 }
 let gcalClient=null,gcalCb=null;
 function gcalToken(prompt,cb){
- const go=()=>{gcalCb=cb;if(!gcalClient)gcalClient=google.accounts.oauth2.initTokenClient({client_id:C.cid,scope:'https://www.googleapis.com/auth/calendar.readonly',callback:r=>{if(r.access_token){C.gtok=r.access_token;C.gexp=Date.now()+(+r.expires_in||3600)*1000;gcalCb&&gcalCb(C.gtok)}else gcalCb&&gcalCb(null)}});gcalClient.requestAccessToken({prompt})};
- if(window.google&&google.accounts&&google.accounts.oauth2)go();else{const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.onload=go;document.head.append(sc)}
+ let done=false;const fin=v=>{if(done)return;done=true;cb(v)};
+ const to=setTimeout(()=>fin(null),prompt==='consent'?60000:12000);
+ const wrapped=v=>{clearTimeout(to);fin(v)};
+ const go=()=>{gcalCb=wrapped;if(!gcalClient)gcalClient=google.accounts.oauth2.initTokenClient({client_id:C.cid,scope:'https://www.googleapis.com/auth/calendar.readonly',callback:r=>{if(r.access_token){C.gtok=r.access_token;C.gexp=Date.now()+(+r.expires_in||3600)*1000;gcalCb&&gcalCb(C.gtok)}else gcalCb&&gcalCb(null)},error_callback:()=>{gcalCb&&gcalCb(null)}});gcalClient.requestAccessToken({prompt})};
+ if(window.google&&google.accounts&&google.accounts.oauth2)go();else{const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.onload=go;sc.onerror=()=>{clearTimeout(to);fin(null)};document.head.append(sc)}
 }
 function apiEvt(e){
  const s=e.start||{},en=e.end||{},p=n=>String(n).padStart(2,'0'),f=d=>`${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
@@ -314,7 +317,8 @@ async function loadGCalGoogle(){
  const[mn,mx]=gcalRange();
  let r;try{r=await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?singleEvents=true&orderBy=startTime&maxResults=250&timeMin=${encodeURIComponent(mn)}&timeMax=${encodeURIComponent(mx)}`,{headers:{Authorization:'Bearer '+C.gtok}})}catch(e){return}
  if(!r.ok){if(r.status===401){C.gtok=null;await setGCalGoogle(false,true);toast('カレンダーの連携が切れました')}return}
- const j=await r.json();gcalEvts=(j.items||[]).map(apiEvt).filter(Boolean);
+ let j;try{j=await r.json()}catch(e){return}
+ gcalEvts=(j.items||[]).map(apiEvt).filter(Boolean);
 }
 async function setGCalGoogle(on,silent){
  C.gcalOn=on;
